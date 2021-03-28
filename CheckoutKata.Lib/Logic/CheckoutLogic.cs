@@ -1,5 +1,6 @@
 ﻿using CheckoutKata.Lib.Model;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CheckoutKata.Lib.Logic
 {
@@ -14,9 +15,17 @@ namespace CheckoutKata.Lib.Logic
             basket = new Basket();
         }
 
-        public void AddItem(Item item)
+        public void AddItemToBasket(Item item, int quantity)
         {
-            basket.Items.Add(item);
+            for (int i = 0; i < quantity; i++)
+            {
+                basket.Items.Add(item);
+            }
+        }
+
+        public float GetBasketTotalCost()
+        {
+            return basket.Items.Sum(x => x.UnitPrice);
         }
     }
 }

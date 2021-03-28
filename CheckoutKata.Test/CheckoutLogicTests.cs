@@ -9,6 +9,19 @@ namespace CheckoutKata.Test
     {
         CheckoutLogic checkoutLogic;
 
+        readonly Item itemA;
+        readonly Item itemB;
+        readonly Item itemC;
+        readonly Item itemD;
+
+        public CheckoutLogicTests()
+        {
+            itemA = new Item("A", 10);
+            itemB = new Item("B", 15);
+            itemC = new Item("C", 40);
+            itemD = new Item("D", 55);
+        }
+
         [TestInitialize]
         public void Initialise()
         {
@@ -18,11 +31,18 @@ namespace CheckoutKata.Test
         [TestMethod]
         public void WhenItemAddedToBasket_ThenItemAddedToBasket()
         {
-            var itemA = new Item("A", 10);
-
-            checkoutLogic.AddItem(itemA);
+            checkoutLogic.AddItemToBasket(itemA, 1);
 
             Assert.AreEqual(1, checkoutLogic.BasketItems.Count);
+        }
+
+        [TestMethod]
+        public void GetTotalCost_CalculatesCostOfAllItems()
+        {
+            checkoutLogic.AddItemToBasket(itemA, 3);
+            checkoutLogic.AddItemToBasket(itemB, 1);
+
+            Assert.AreEqual(45, checkoutLogic.GetBasketTotalCost());
         }
     }
 }
