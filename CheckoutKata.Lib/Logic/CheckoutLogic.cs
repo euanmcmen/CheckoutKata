@@ -9,12 +9,14 @@ namespace CheckoutKata.Lib.Logic
     public class CheckoutLogic
     {
         private readonly CheckoutRepository checkoutRepository;
+        private readonly PromotionLogic promotionLogic;
 
         private readonly Dictionary<string, BasketItem> basketItems;
 
         public CheckoutLogic()
         {
             checkoutRepository = new CheckoutRepository();
+            promotionLogic = new PromotionLogic();
             basketItems = new Dictionary<string, BasketItem>();
         }
 
@@ -55,9 +57,10 @@ namespace CheckoutKata.Lib.Logic
 
             foreach (var promotion in promotionsForItem)
             {
-                var numberOfApplications = Math.DivRem(basketItem.Quantity, promotion.QuantityForEffect, out _);
-                total += promotion.GetPromotionPrice() * numberOfApplications;
-                quantityNotPromotional -= promotion.QuantityForEffect * numberOfApplications;
+                var promotionResult = promotionLogic.GetBasketItemPromotionCost(basketItem, promotion);
+
+                total += promotionResult.TotalCost;
+                quantityNotPromotional -= promotionResult.ItemsProcessed;
             }
 
             total += basketItem.Item.UnitPrice * quantityNotPromotional;
