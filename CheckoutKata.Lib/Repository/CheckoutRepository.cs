@@ -1,4 +1,5 @@
-﻿using CheckoutKata.Lib.Model;
+﻿using CheckoutKata.Lib.Logic.PromotionPricing;
+using CheckoutKata.Lib.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,13 +9,13 @@ namespace CheckoutKata.Lib.Repository
 {
     public class CheckoutRepository
     {
-        public Dictionary<string, Item> Items { get; private set; }
-
-        public List<Promotion> Promotions { get; private set; }
+        private readonly Dictionary<string, Item> items;
+        private readonly List<Promotion> promotions;
+        private readonly PromotionPricingMap defaultPromotionPricingMapping;
 
         public CheckoutRepository()
         {
-            Items = new Dictionary<string, Item>()
+            items = new Dictionary<string, Item>()
             {
                 {"A",  new Item("A", 10) },
                 {"B", new Item("B", 15) },
@@ -22,16 +23,27 @@ namespace CheckoutKata.Lib.Repository
                 {"D",  new Item("D", 55) },
             };
 
-            Promotions = new List<Promotion>()
+            promotions = new List<Promotion>()
             {
-                new XForYPromotion() { Item = Items["B"], QuantityForEffect = 3, BundlePrice = 40 },
-                new PercentDiscountPromotion() {Item = Items["D"], QuantityForEffect = 2, PercentDiscount = 25}
+                new XForYPromotion() { Item = items["B"], QuantityForEffect = 3, BundlePrice = 40 },
+                new PercentDiscountPromotion() {Item = items["D"], QuantityForEffect = 2, PercentDiscount = 25}
             };
+
+            defaultPromotionPricingMapping = new PromotionPricingMap(new Dictionary<Type, IPromotionPricing>()
+            {
+                { typeof(XForYPromotion), new XForYPromotionPricing() },
+                { typeof(PercentDiscountPromotion), new PercentDiscountPromotionPricing() }
+            });
         }
 
         public List<Promotion> GetPromotionsForItemSKU(string sku)
         {
-            return Promotions.Where(x => x.Item.SKU == sku).ToList();
+            return promotions.Where(x => x.Item.SKU == sku).ToList();
+        }
+
+        public PromotionPricingMap GetDefaultPromotionPricingMapping()
+        {
+            return defaultPromotionPricingMapping;
         }
     }
 }

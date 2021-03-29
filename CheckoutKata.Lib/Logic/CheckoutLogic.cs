@@ -16,7 +16,8 @@ namespace CheckoutKata.Lib.Logic
         public CheckoutLogic()
         {
             checkoutRepository = new CheckoutRepository();
-            promotionLogic = new PromotionLogic();
+            promotionLogic = new PromotionLogic(checkoutRepository.GetDefaultPromotionPricingMapping());
+
             basketItems = new Dictionary<string, BasketItem>();
         }
 

@@ -1,7 +1,6 @@
-﻿using CheckoutKata.Lib.Model;
+﻿using CheckoutKata.Lib.Logic.PromotionPricing;
+using CheckoutKata.Lib.Model;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CheckoutKata.Lib.Logic
 {
@@ -14,11 +13,18 @@ namespace CheckoutKata.Lib.Logic
 
     public class PromotionLogic
     {
+        private readonly PromotionPricingMap promotionPricingMap;
+
+        public PromotionLogic(PromotionPricingMap promotionPricingMap)
+        {
+            this.promotionPricingMap = promotionPricingMap;
+        }
+
         public PromotionCalculationResult GetBasketItemPromotionCost(BasketItem basketItem, Promotion promotion)
         {
             var numberOfApplications = Math.DivRem(basketItem.Quantity, promotion.QuantityForEffect, out _);
 
-            var total = GetItemPromotionalPrice(basketItem.Item, promotion) * numberOfApplications;
+            var total = GetPromotionalPrice(promotion) * numberOfApplications;
             var itemsProcessed = promotion.QuantityForEffect * numberOfApplications;
 
             return new PromotionCalculationResult()
@@ -28,23 +34,12 @@ namespace CheckoutKata.Lib.Logic
             };
         }
 
-        private float GetItemPromotionalPrice(Item item, Promotion promotion)
+        private float GetPromotionalPrice(Promotion promotion)
         {
-            //TODO - strategy
+            if (promotionPricingMap.Mapping.TryGetValue(promotion.GetType(), out IPromotionPricing promotionPricing))
+                return promotionPricing.GetPromotionalPrice(promotion);
 
-            if (promotion is XForYPromotion xyPromo)
-            {
-                return xyPromo.BundlePrice;
-            }
-
-            if (promotion is PercentDiscountPromotion perPromo)
-            {
-                var noDiscount = item.UnitPrice * perPromo.QuantityForEffect;
-                var deduction = noDiscount * ((float)perPromo.PercentDiscount / 100);
-                return noDiscount - deduction;
-            }
-
-            return item.UnitPrice;
+            throw new NotImplementedException($"No PromotionPricing implementation for Promotion type {promotion.GetType().Name} in PromotionPricingMap");
         }
     }
 }
